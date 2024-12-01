@@ -66,3 +66,8 @@ async def get_positions():
             position=position["position"]  # La posición ya está guardada en la base de datos
         ))
     return positions
+
+# Punto de entrada para ejecutar la aplicación
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
