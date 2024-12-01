@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - api-sz
 
 on:
@@ -15,26 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Clona el repositorio
       - uses: actions/checkout@v4
 
+      # Configura la versión de Python
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
+      # Crea y activa el entorno virtual
       - name: Create and start virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
       
+      # Instala las dependencias
       - name: Install dependencies
         run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
+      # Comprime los archivos para el despliegue
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
 
+      # Carga el artefacto para la etapa de despliegue
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
@@ -49,17 +49,19 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+
     steps:
+      # Descarga el artefacto del trabajo de build
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
+      # Descomprime los archivos del artefacto
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      
+      # Despliega la aplicación en Azure
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -67,3 +69,4 @@ jobs:
           app-name: 'api-sz'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DFBB7B97C5884C3CA72A7B114638D153 }}
+          startup-command: 'python3 -m uvicorn main:app --host 0.0.0.0 --port $PORT'
